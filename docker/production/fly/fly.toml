@@ -1,0 +1,96 @@
+# Personal AI Assistant - Fly.io Production Deployment
+# This deploys the entire AI stack as one app with autostart/autostop
+
+app = "personal-ai-assistant"
+primary_region = "mad"  # Madrid, Spain - change to your preferred region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  
+  # Auto-start/stop configuration for cost optimization
+  auto_start_machines = true
+  auto_stop_machines = "suspend"  # Faster wake-up than "stop"
+  min_machines_running = 0
+  
+  # Concurrency limits
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 5
+    hard_limit = 25
+
+# Health check endpoint
+[checks]
+  [checks.health]
+    type = "http"
+    port = 8080
+    interval = "15s"
+    timeout = "2s"
+    method = "GET"
+    path = "/health"
+
+# Persistent volumes for databases
+[[mounts]]
+  source = "chromadb_data"
+  destination = "/data/chromadb"
+
+[[mounts]]
+  source = "neo4j_data"
+  destination = "/data/neo4j"
+
+[[mounts]]
+  source = "neo4j_logs"
+  destination = "/data/neo4j/logs"
+
+[[mounts]]
+  source = "ollama_data"
+  destination = "/data/ollama"
+
+[[mounts]]
+  source = "openwebui_data"
+  destination = "/data/open-webui"
+
+[[mounts]]
+  source = "logs_data"
+  destination = "/data/logs"
+
+# Environment variables
+[env]
+  # Database configuration
+  CHROMADB_HOST = "localhost"
+  CHROMADB_PORT = "8000"
+  NEO4J_URI = "bolt://localhost:7687"
+  NEO4J_USER = "neo4j"
+  NEO4J_PASSWORD = "personal_ai_password"
+  
+  # Service URLs (all running in same container)
+  MEMORY_SYSTEM_URL = "http://localhost:8001"
+  OLLAMA_BASE_URL = "http://localhost:11434"
+  
+  # Gateway configuration
+  HOST = "0.0.0.0"
+  PORT = "8080"
+  ENVIRONMENT = "production"
+  LOG_LEVEL = "INFO"
+  
+  # Open WebUI configuration
+  WEBUI_NAME = "Personal AI Assistant"
+  OPENAI_API_BASE_URL = "http://localhost:8080/v1"
+  ENABLE_RAG_HYBRID_SEARCH = "true"
+  ENABLE_RAG_WEB_LOADER_SSL_VERIFICATION = "true"
+  DEFAULT_USER_ROLE = "user"
+  ENABLE_SIGNUP = "false"
+  WEBUI_AUTH = "true"
+
+# Resource limits
+[processes]
+  app = "python -m uvicorn personal_ai_gateway.api.app:app --host 0.0.0.0 --port 8080"
+
+# Machine configuration
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 4
+  memory = "8GB"

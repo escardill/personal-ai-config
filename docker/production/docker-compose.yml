@@ -138,7 +138,7 @@ services:
       - MEMORY_SYSTEM_URL=http://personal-ai-memory:8001
       - MEMORY_SYSTEM_API_KEY=${MEMORY_API_SECRET_KEY}
       - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:1b}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
       - API_KEYS=${GATEWAY_API_KEYS}

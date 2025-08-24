@@ -70,7 +70,7 @@ check_service "open-webui"
 
 # Download Ollama model if needed
 echo "🤖 Setting up Ollama model..."
-docker compose exec ollama ollama pull llama3.1:8b || echo "⚠️  Ollama model download failed - you can do this manually later"
+docker compose exec ollama ollama pull llama3.2:1b || echo "⚠️  Ollama model download failed - you can do this manually later"
 
 echo ""
 echo "🎉 Personal AI Assistant is ready!"

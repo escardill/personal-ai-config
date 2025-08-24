@@ -1,0 +1,71 @@
+# Personal AI Assistant - Docker ignore file for Fly deployment
+
+# Git and version control
+.git
+.gitignore
+.gitmodules
+
+# Documentation
+README.md
+CHANGELOG.md
+*.md
+
+# Development files
+.env
+.env.*
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Test files
+tests/
+test_*.py
+*_test.py
+pytest.ini
+.coverage
+htmlcov/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Data directories (will be mounted as volumes)
+data/
+personal-ai-config/data/
+
+# Docker files (not needed in container)
+docker/
+docker-compose*.yml
+Dockerfile*
+
+# Scripts (not needed in container)
+scripts/
+*.sh
+
+# Configuration files (will be set via environment)
+personal-ai-config/configs/
+configs/
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
