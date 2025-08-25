@@ -13,25 +13,44 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Navigate to the docker compose directory
-cd "$(dirname "$0")/../docker/local"
+# Get the script directory and navigate to the docker compose directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOCKER_DIR="$SCRIPT_DIR/../docker/local"
+WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Create necessary directories
+echo "🖥️  Script location: $SCRIPT_DIR"
+echo "📍 Docker compose location: $DOCKER_DIR"
+echo "📍 Workspace root: $WORKSPACE_ROOT"
+
+# Navigate to the docker compose directory
+cd "$DOCKER_DIR"
+
+# Create necessary directories (relative to workspace root)
 echo "📁 Creating data directories..."
-mkdir -p ../../data/{chromadb,neo4j/{data,logs,conf},ollama,open-webui,logs/{nginx,memory,gateway}}
+mkdir -p "$WORKSPACE_ROOT/personal-ai-config/data/{chromadb,neo4j/{data,logs,conf},ollama,open-webui,logs/{nginx,memory,gateway}}"
 
 # Generate API keys if they don't exist
-if [ ! -f "../../configs/env/.api_keys_generated" ]; then
+if [ ! -f "$WORKSPACE_ROOT/personal-ai-config/configs/env/.api_keys_generated" ]; then
     echo "🔑 Generating API keys for local development..."
-    cd ../../../personal-ai-gateway
-    python generate_api_keys.py alice,bob,charlie > ../personal-ai-config/configs/env/.api_keys_generated
+    cd "$WORKSPACE_ROOT/personal-ai-gateway"
+    python generate_api_keys.py alice,bob,charlie > "$WORKSPACE_ROOT/personal-ai-config/configs/env/.api_keys_generated"
     echo "✅ API keys generated and saved"
-    cd ../../personal-ai-config/docker/local
+    cd "$DOCKER_DIR"
 fi
 
-# Pull latest images
-echo "📦 Pulling latest Docker images..."
-docker compose pull
+# Check if we need to pull base images (only on first run or when explicitly requested)
+if [ ! -f "$WORKSPACE_ROOT/personal-ai-config/data/.images_pulled" ] || [ "$1" = "--pull" ]; then
+    echo "📦 Pulling base Docker images (this may take a while on first run)..."
+    docker compose pull chromadb neo4j ollama open-webui nginx
+    touch "$WORKSPACE_ROOT/personal-ai-config/data/.images_pulled"
+    echo "✅ Base images pulled and cached"
+else
+    echo "📦 Using cached base images (run with --pull to update)"
+fi
+
+# Build custom services with latest code changes
+echo "🔨 Building custom services with latest code..."
+docker compose build personal-ai-memory personal-ai-gateway
 
 # Start the services
 echo "🚀 Starting services..."
@@ -84,13 +103,13 @@ echo "   • Neo4j Browser:        http://localhost:7474"
 echo "   • ChromaDB:             http://localhost:8000"
 echo ""
 echo "🔑 Default User API Keys:"
-if [ -f "../../configs/env/.api_keys_generated" ]; then
-    grep "User.*API Key:" ../../configs/env/.api_keys_generated
+if [ -f "$WORKSPACE_ROOT/personal-ai-config/configs/env/.api_keys_generated" ]; then
+    grep "User.*API Key:" "$WORKSPACE_ROOT/personal-ai-config/configs/env/.api_keys_generated"
 fi
 echo ""
 echo "📚 Documentation:"
-echo "   • Gateway: ../../../personal-ai-gateway/README.md"
-echo "   • Memory:  ../../../personal-ai-memory/README.md"
+echo "   • Gateway: $WORKSPACE_ROOT/personal-ai-gateway/README.md"
+echo "   • Memory:  $WORKSPACE_ROOT/personal-ai-memory/README.md"
 echo ""
 echo "🛠️  Management Commands:"
 echo "   • View logs:     docker compose logs -f [service-name]"

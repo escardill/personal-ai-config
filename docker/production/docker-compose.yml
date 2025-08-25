@@ -18,7 +18,7 @@ services:
     networks:
       - pai-internal
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -31,7 +31,7 @@ services:
           memory: 512M
 
   neo4j:
-    image: neo4j:5.20-community
+    image: neo4j:4.4-community
     container_name: pai-neo4j-prod
     volumes:
       - neo4j_data:/data
@@ -178,7 +178,7 @@ services:
       - ENABLE_RAG_HYBRID_SEARCH=true
       - ENABLE_RAG_WEB_LOADER_SSL_VERIFICATION=true
       - DEFAULT_USER_ROLE=user
-      - ENABLE_SIGNUP=${ENABLE_SIGNUP:-false}
+      - ENABLE_SIGNUP=${ENABLE_SIGNUP:-true}
       - WEBUI_AUTH=true
       - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
     depends_on:

@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: personal-ai-local
 
 services:
@@ -12,19 +10,18 @@ services:
     volumes:
       - ../../data/chromadb:/chroma/chroma
     environment:
-      - CHROMA_SERVER_AUTHN_CREDENTIALS_FILE=/chroma/chroma/credentials
-      - CHROMA_SERVER_AUTHN_PROVIDER=basic
+      - CHROMA_SERVER_AUTHN_PROVIDER=none
     networks:
       - pai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
       interval: 30s
       timeout: 10s
       retries: 3
     restart: unless-stopped
 
   neo4j:
-    image: neo4j:5.20-community
+    image: neo4j:4.4-community
     container_name: pai-neo4j
     ports:
       - "7474:7474"   # HTTP
@@ -62,7 +59,7 @@ services:
     networks:
       - pai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      test: ["CMD", "ollama", "list"]
       interval: 60s
       timeout: 30s
       retries: 3
@@ -79,8 +76,8 @@ services:
   # Personal AI Memory Service
   personal-ai-memory:
     build:
-      context: ../../..
-      dockerfile: personal-ai-memory/Dockerfile
+      context: ../../../personal-ai-memory
+      dockerfile: Dockerfile
     container_name: pai-memory
     ports:
       - "8001:8001"
@@ -96,7 +93,7 @@ services:
       - LOG_LEVEL=INFO
     depends_on:
       chromadb:
-        condition: service_healthy
+        condition: service_started
       neo4j:
         condition: service_healthy
     networks:
@@ -111,8 +108,8 @@ services:
   # Personal AI Gateway Service  
   personal-ai-gateway:
     build:
-      context: ../../..
-      dockerfile: personal-ai-gateway/Dockerfile
+      context: ../../../personal-ai-gateway
+      dockerfile: Dockerfile
     container_name: pai-gateway
     ports:
       - "8080:8080"
@@ -152,8 +149,10 @@ services:
       - ENABLE_RAG_HYBRID_SEARCH=true
       - ENABLE_RAG_WEB_LOADER_SSL_VERIFICATION=true
       - DEFAULT_USER_ROLE=user
-      - ENABLE_SIGNUP=false
+      - ENABLE_SIGNUP=true
       - WEBUI_AUTH=true
+      - WHISPER_MODEL=tiny
+      - WHISPER_MODEL_AUTO_UPDATE=false
     depends_on:
       personal-ai-gateway:
         condition: service_healthy
@@ -165,6 +164,13 @@ services:
       timeout: 10s
       retries: 3
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2G
+        reservations:
+          memory: 512M
 
   # Nginx (for local development with SSL)
   nginx:

@@ -15,7 +15,7 @@ cd personal-ai-assistant/personal-ai-config
 ./scripts/start-local.sh
 
 # Wait for startup, then access:
-# 🌐 Open WebUI: http://localhost:3000
+# 🌐 Frontend: http://localhost:3000
 # 🚪 Gateway API: http://localhost:8080  
 # 🧠 Memory Service: http://localhost:8001
 ```
@@ -31,7 +31,7 @@ That's it! The system will:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Open WebUI    │────│ Personal AI     │────│ Personal AI     │
+│                     │────│ Personal AI     │────│ Personal AI     │
 │   (Frontend)    │    │ Gateway (API)   │    │ Memory Service  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
@@ -276,9 +276,9 @@ curl -f https://api.your-domain.com/health
 | Service | Image | Size | Purpose |
 |---------|-------|------|---------|
 | ChromaDB | `chromadb/chroma:latest` | ~500MB | Vector database |
-| Neo4j | `neo4j:5.20-community` | ~500MB | Graph database |
+| Neo4j | `neo4j:4.20-community` | ~500MB | Graph database |
 | Ollama | `ollama/ollama:latest` | ~1GB | LLM inference |
-| Open WebUI | `ghcr.io/open-webui/open-webui:main` | ~800MB | Web interface |
+| frontend
 | Caddy | `caddy:latest` | ~50MB | Reverse proxy |
 | Nginx | `nginx:alpine` | ~25MB | Local proxy |
 
